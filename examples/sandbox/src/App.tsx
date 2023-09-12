@@ -3,26 +3,22 @@ import SearchApplicationClient from '@elastic/search-application-client'
 import './App.css'
 
 const request = SearchApplicationClient(
-  'movies',
-  'https://d1bd36862ce54c7b903e2aacd4cd7f0a.us-east4.gcp.elastic-cloud.com:443',
-  'UnlMRm9JZ0J5TkZrbW41RWN0Mm06YkxvXzJ1Zl9TcXlyTU4yMDl4YTZKdw==',
+  'test-search',
+    'https://b1edbb7ba03142b0883076b4b1c22495.europe-west1.gcp.cloud.es.io:443',
+  'LV9Db2lJb0Iwa211Z2hqSndsMEc6SEZUbjVVUUhSXzJlM1VHeWZRQ3lYdw==',
   {
     facets: {
-      actors: {
+      color: {
         type: 'terms',
         size: 10,
-        field: 'actors.keyword',
+        field: 'product_color.keyword',
       },
-      directors: {
+      locale: {
         type: 'terms',
-        field: 'directors.keyword',
+        field: 'product_locale',
         size: 10,
         disjunctive: true,
-      },
-      imdbrating: {
-        type: 'stats',
-        field: 'imdbrating',
-      },
+      }
     },
   }
 )
@@ -161,21 +157,29 @@ function App() {
         <div className="mt-4">
           <p className="text-gray-500">{results?.hits?.total?.value} Results</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
           {results &&
             results.hits.hits.map((hit: any) => {
               return (
                 <div
                   key={hit._id}
-                  className="bg-white rounded-lg shadow-md p-4"
+                  className="md:flex"
                 >
+                  {/*
+                  <div className="md:shrink-0" >
                   <img
-                    src={hit._source.poster}
-                    alt={hit._source.title}
+                    src={hit._source.product_title}
+                    alt={hit._source.product_title}
                     className="mb-4 rounded-lg"
                   />
-                  <h3 className="text-lg font-semibold">{hit._source.title}</h3>
-                  <p>{hit._source.plot}</p>
+
+                  </div>
+                  */}
+                  <div className="p-8">
+                    <h3 className="uppercase tracking-wide text-sm text-indigo-500 font-semibold">{hit._source.product_title}</h3>
+                    <p className="mt-1 text-lg leading-tight font-medium text-black hover:underline" dangerouslySetInnerHTML={{ __html: hit._source.product_description }} />
+                    <p className="mt-2 text-slate-500"dangerouslySetInnerHTML={{ __html: hit._source.product_bullet_point }} />
+                  </div>
                 </div>
               )
             })}
