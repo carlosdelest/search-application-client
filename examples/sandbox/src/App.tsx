@@ -86,7 +86,7 @@ function App() {
 
   const doSearch = async () => {
     const r = request()
-      .setSort(['_score'])
+      // .setSort(['_score'])
       .query(query)
       .setPageSize(12)
       .setFrom(12 * (page - 1))
