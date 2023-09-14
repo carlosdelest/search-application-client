@@ -121,7 +121,15 @@ function App() {
       r.addFacetFilter(key, value as string);
     }
 
-    const results = await r.search()
+    // Locale
+    const search = window.location.search;
+    const params = new URLSearchParams(search);
+    const locale = params.get('locale');
+    if (locale != null) {
+      r.addParameter("locale", locale)
+    }
+
+    const results = await r.search();
 
     setResults(results)
   }
