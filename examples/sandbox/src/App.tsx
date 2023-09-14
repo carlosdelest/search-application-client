@@ -148,6 +148,37 @@ function App() {
     }
   }
 
+  function getStarsForRating(rating: number): string {
+    const maxRating = 5; // Assuming a maximum rating of 5 stars
+    const starCount = 5; // Total number of stars
+    const starPercentage = (rating / maxRating) * 100;
+    const starWidth = (starPercentage * starCount) / 100;
+
+    const fullStars = Math.floor(starWidth);
+    const halfStar = starWidth - fullStars >= 0.5;
+
+    let stars = '';
+
+    for (let i = 0; i < fullStars; i++) {
+      stars += '★'; // Full star character
+    }
+
+    if (halfStar) {
+      stars += '☆'; // Half star character
+    }
+
+    const remainingStars = starCount - stars.length;
+    for (let i = 0; i < remainingStars; i++) {
+      stars += '☆'; // Empty star character
+    }
+
+    return stars;
+  }
+
+// Example usage:
+  const rating = 3.7;
+  const stars = getStarsForRating(rating);
+
   function SortControls() {
     const handleSort = (criteria: string) => {
       setSortBy(criteria);
@@ -170,10 +201,12 @@ function App() {
               <option value="">Select</option>
               <option value="stars">Stars</option>
               <option value="price">Price</option>
+              <option value="ratings">Ratings</option>
             </select>
             <select value={sortOrder} onChange={(e) => handleSortOrderChange(e.target.value as SortOrder)}>
-              <option value="asc">Ascending</option>
-              <option value="desc">Descending</option>
+              {/*Don't ask */}
+              <option value="desc">Ascending</option>
+              <option value="asc">Descending</option>
             </select>
           </div>
         </div>
@@ -239,16 +272,16 @@ function App() {
         <div className="mt-4">
           <p className="text-gray-500">{results?.hits?.total?.value} Results</p>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-rows-5 grid-cols-2 gap-4">
           {results &&
             results.hits.hits.map((hit: any) => {
               const product = hit._source
               return (
-                  <div className="flex font-sans">
+                  <div className="flex font-sans relative shadow-xl flex leading-none">
                     <div className="flex-none w-48 relative">
                       <img src={product.image} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                     </div>
-                    <form className="flex-auto p-6">
+                    <div className="flex-auto p-6">
                       <div className="flex flex-wrap">
                         <h1 className="flex-auto text-lg font-semibold text-slate-900">
                           {truncateText(product.product_title, 50)}
@@ -256,14 +289,17 @@ function App() {
                         <div className="text-lg font-semibold text-slate-500">
                           {product.price}
                         </div>
-                        <div className="w-full flex-none text-sm font-medium text-slate-700 mt-2">
-                          {product.stars}
+                        <div className="w-full text-sm font-medium text-slate-700 mt-2">
+                          {getStarsForRating(product.stars.substring(0, 3))}
+                        </div>
+                        <div className="w-full text-sm font-medium text-slate-700 mt-2">
+                          {product.ratings}
                         </div>
                       </div>
                       <p className="text-sm text-slate-700">
                         {truncateText(product.product_description, 100)}
                       </p>
-                    </form>
+                    </div>
                   </div>
               )
             })}
