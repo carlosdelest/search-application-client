@@ -60,8 +60,13 @@ export type Query = {
   term?: TermQuery
   range?: RangeQuery
   nested?: NestedQuery
+  exists?: ExistsQuery
   geo_bounding_box?: GeoBoundingBoxQuery
   geo_distance?: GeoDistanceQuery
+}
+
+export type ExistsQuery = {
+  field: string
 }
 
 export type GeoBoundingBoxQuery = {

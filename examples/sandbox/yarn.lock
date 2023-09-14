@@ -1507,6 +1507,17 @@
     nock "^13.3.1"
     ora "^6.3.1"
 
+"@elastic/search-application-client@file:../../":
+  version "8.9.0-1"
+  dependencies:
+    "@changesets/cli" "^2.26.1"
+    "@elastic/elasticsearch" "^8.8.0"
+    chalk "^5.2.0"
+    cross-fetch "^3.1.6"
+    inquirer "^9.2.7"
+    nock "^13.3.1"
+    ora "^6.3.1"
+
 "@elastic/transport@^8.3.2":
   version "8.3.3"
   resolved "https://registry.yarnpkg.com/@elastic/transport/-/transport-8.3.3.tgz#06c5b1b9566796775ac96d17959dafc269da5ec1"

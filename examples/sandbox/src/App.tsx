@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import SearchApplicationClient from '@elastic/search-application-client'
 import './App.css'
+import {SortFields} from "../../../src/types";
 
 const request = SearchApplicationClient(
   'test-search',
@@ -12,6 +13,16 @@ const request = SearchApplicationClient(
         type: 'terms',
         size: 10,
         field: 'product_color.keyword',
+      },
+      stars: {
+        type: 'terms',
+        size: 5,
+        field: 'stars',
+      },
+      category: {
+        type: 'terms',
+        size: 5,
+        field: 'category',
       },
       locale: {
         type: 'terms',
@@ -78,22 +89,52 @@ function Facets({ facets, addFilter, removeFilter, filters }: any) {
   )
 }
 
+
 function App() {
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
   const [results, setResults] = useState<any>(null)
   const [filters, setFilters] = useState<any>({})
+  const [sortBy, setSortBy] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+
+  type Item = {
+    stars: string;
+    price: number;
+  };
+
+  type SortOrder = 'asc' | 'desc';
 
   const doSearch = async () => {
     const r = request()
-      // .setSort(['_score'])
-      .query(query)
-      .setPageSize(12)
-      .setFrom(12 * (page - 1))
-      .addParameter('custom-parameter', 'custom-value')
+        // .setSort(['_score'])
+        .query(query)
+        .setPageSize(12)
+        .setFrom(12 * (page - 1))
+        .addParameter('custom-parameter', 'custom-value')
+        .setFilter({
+          "bool": {
+            "must": [
+              {
+                "exists": {
+                  "field": "image"
+                }
+              },
+              {
+                "exists": {
+                  "field": "price"
+                }
+              }
+            ]
+          }
+        })
+
+    if (sortBy != '') {
+      r.setSort( [{ [sortBy]: sortOrder }])
+    }
 
     for (const [key, value] of Object.entries(filters)) {
-      r.addFacetFilter(key, value as string)
+      r.addFacetFilter(key, value as string);
     }
 
     const results = await r.search()
@@ -101,7 +142,36 @@ function App() {
     setResults(results)
   }
 
-  const handleSearch = async (e: any) => {
+  function SortControls() {
+    const handleSort = (criteria: string) => {
+      setSortBy(criteria);
+      doSearch();
+    };
+
+    const toggleSortOrder = () => {
+      // Toggle between 'asc' and 'desc'
+      const newSortOrder: SortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+      setSortOrder(newSortOrder);
+
+      // Re-sort using the current criteria and new sortOrder
+      handleSort(sortBy);
+    };
+
+    return (
+        <div>
+          <div>
+            <h2>Sort By:</h2>
+            <button className="bg-blue-500 text-white px-4 py-2 rounded-md" onClick={() => handleSort('stars')}>Stars</button>
+            <button className="bg-blue-500 text-white px-4 py-2 rounded-md" onClick={() => handleSort('price')}>Price</button>
+            <button className="bg-blue-500 text-white px-4 py-2 rounded-md" onClick={toggleSortOrder}>
+              {sortOrder === 'asc' ? 'Descending' : 'Ascending'}
+            </button>
+          </div>
+        </div>
+    );
+  }
+
+    const handleSearch = async (e: any) => {
     e.preventDefault()
     setPage(1)
     doSearch()
@@ -155,32 +225,32 @@ function App() {
           </button>
         </form>
         <div className="mt-4">
+          <SortControls/>
+        </div>
+        <div className="mt-4">
           <p className="text-gray-500">{results?.hits?.total?.value} Results</p>
         </div>
-        <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+        <div className="relative pt-10 xl:pt-0 mt-10 xl:mt-2">
           {results &&
             results.hits.hits.map((hit: any) => {
               return (
-                <div
-                  key={hit._id}
-                  className="md:flex"
-                >
-                  {/*
-                  <div className="md:shrink-0" >
-                  <img
-                    src={hit._source.product_title}
-                    alt={hit._source.product_title}
-                    className="mb-4 rounded-lg"
-                  />
-
+                  <div key={hit._id} className="flex font-sans">
+                    <div className="flex-none w-48 relative">
+                      <img src={hit._source.image} alt={hit._source.product_title} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                    </div>
+                    <div className="flex-auto p-6">
+                      <div className="flex flex-wrap">
+                        <h1 className="flex-auto text-lg font-semibold text-slate-900">
+                          {hit._source.product_title}
+                        </h1>
+                        <div className="text-lg font-semibold text-slate-500">
+                          {hit._source.price}
+                        </div>
+                        <div className="w-full flex-none text-sm font-medium text-slate-700 mt-2" dangerouslySetInnerHTML={{ __html: hit._source.product_description }}>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  */}
-                  <div className="p-8">
-                    <h3 className="uppercase tracking-wide text-sm text-indigo-500 font-semibold">{hit._source.product_title}</h3>
-                    <p className="mt-1 text-lg leading-tight font-medium text-black hover:underline" dangerouslySetInnerHTML={{ __html: hit._source.product_description }} />
-                    <p className="mt-2 text-slate-500"dangerouslySetInnerHTML={{ __html: hit._source.product_bullet_point }} />
-                  </div>
-                </div>
               )
             })}
         </div>
