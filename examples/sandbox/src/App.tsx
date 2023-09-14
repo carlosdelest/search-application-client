@@ -134,6 +134,20 @@ function App() {
     setResults(results)
   }
 
+  function truncateText(text: string, maxLength: number) {
+    if (text == null) {
+      return null;
+    }
+    // Check if the text is longer than the maximum length
+    if (text.length > maxLength) {
+      // Trim the text to the maximum length and add an ellipsis
+      return text.substring(0, maxLength - 3) + '...';
+    } else {
+      // If the text is not longer than the maximum length, return it unchanged
+      return text;
+    }
+  }
+
   function SortControls() {
     const handleSort = (criteria: string) => {
       setSortBy(criteria);
@@ -225,26 +239,31 @@ function App() {
         <div className="mt-4">
           <p className="text-gray-500">{results?.hits?.total?.value} Results</p>
         </div>
-        <div className="relative pt-10 xl:pt-0 mt-10 xl:mt-2">
+        <div className="grid grid-cols-2 gap-4">
           {results &&
             results.hits.hits.map((hit: any) => {
+              const product = hit._source
               return (
-                  <div key={hit._id} className="flex font-sans">
+                  <div className="flex font-sans">
                     <div className="flex-none w-48 relative">
-                      <img src={hit._source.image} alt={hit._source.product_title} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                      <img src={product.image} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                     </div>
-                    <div className="flex-auto p-6">
+                    <form className="flex-auto p-6">
                       <div className="flex flex-wrap">
                         <h1 className="flex-auto text-lg font-semibold text-slate-900">
-                          {hit._source.product_title}
+                          {truncateText(product.product_title, 50)}
                         </h1>
                         <div className="text-lg font-semibold text-slate-500">
-                          {hit._source.price}
+                          {product.price}
                         </div>
-                        <div className="w-full flex-none text-sm font-medium text-slate-700 mt-2" dangerouslySetInnerHTML={{ __html: hit._source.product_description }}>
+                        <div className="w-full flex-none text-sm font-medium text-slate-700 mt-2">
+                          {product.stars}
                         </div>
                       </div>
-                    </div>
+                      <p className="text-sm text-slate-700">
+                        {truncateText(product.product_description, 100)}
+                      </p>
+                    </form>
                   </div>
               )
             })}
