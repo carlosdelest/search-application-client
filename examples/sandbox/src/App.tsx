@@ -112,22 +112,6 @@ function App() {
         .setPageSize(12)
         .setFrom(12 * (page - 1))
         .addParameter('custom-parameter', 'custom-value')
-        .setFilter({
-          "bool": {
-            "must": [
-              {
-                "exists": {
-                  "field": "image"
-                }
-              },
-              {
-                "exists": {
-                  "field": "price"
-                }
-              }
-            ]
-          }
-        })
 
     if (sortBy != '') {
       r.setSort( [{ [sortBy]: sortOrder }])
@@ -148,9 +132,8 @@ function App() {
       doSearch();
     };
 
-    const toggleSortOrder = () => {
+    const handleSortOrderChange = (newSortOrder: SortOrder) => {
       // Toggle between 'asc' and 'desc'
-      const newSortOrder: SortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
       setSortOrder(newSortOrder);
 
       // Re-sort using the current criteria and new sortOrder
@@ -161,11 +144,15 @@ function App() {
         <div>
           <div>
             <h2>Sort By:</h2>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded-md" onClick={() => handleSort('stars')}>Stars</button>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded-md" onClick={() => handleSort('price')}>Price</button>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded-md" onClick={toggleSortOrder}>
-              {sortOrder === 'asc' ? 'Descending' : 'Ascending'}
-            </button>
+            <select value={sortBy} onChange={(e) => handleSort(e.target.value)}>
+              <option value="">Select</option>
+              <option value="stars">Stars</option>
+              <option value="price">Price</option>
+            </select>
+            <select value={sortOrder} onChange={(e) => handleSortOrderChange(e.target.value as SortOrder)}>
+              <option value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
           </div>
         </div>
     );
